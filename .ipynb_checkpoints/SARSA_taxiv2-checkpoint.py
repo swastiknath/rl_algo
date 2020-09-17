@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 def eps_greedy(Q, s, eps=0.1):
     '''
-    Epsilon Greedy Policy without Exponential Decay.
+    Epsilon Greedy Policy, dealing with EE Tradeoff. 
     '''
     if np.random.uniform(0, 1)< eps:
         return np.random.randint(Q.shape[1])
@@ -42,6 +42,12 @@ def run_episodes(env, Q, num_episodes=100, to_print=False):
 
 
 def Q_learning(env, lr=0.01, num_episodes=10000, eps=0.3, gamma=0.95, eps_decay=0.00005):
+    """
+    In case of Q Learning we are updating the Action Table with the Maximum action value 
+    for the next state. 
+    Q[s, a] = Q[s, a] + lr * (r + gamma * max(Q[s_]) - Q[s, a])
+    
+    """
     action_range = env.action_space.n
     observation_range = env.observation_space.n
     
@@ -62,7 +68,7 @@ def Q_learning(env, lr=0.01, num_episodes=10000, eps=0.3, gamma=0.95, eps_decay=
             action = eps_greedy(Q, state, eps)
             s_, r, done, info = env.step(action)
             
-            Q[state][action] += lr * (r + gamma * np.max(Q[s_]) - Q[state][action])
+            Q[state][action] += lr * (r + gamma * np.max(Q[s_]) - Q[state][action]) # Selecting the next action from the maximum action value. 
             state = s_
             total_rewards += r
             if done:
@@ -76,6 +82,13 @@ def Q_learning(env, lr=0.01, num_episodes=10000, eps=0.3, gamma=0.95, eps_decay=
     return Q
 
 def SARSA(env, lr=0.01, num_episodes=10000, eps=0.3, gamma=0.95, eps_decay=0.00005):
+    """
+    In case of SARSA, we are selecting the next set of actions for the next state 
+    based on the Epsilon Greedy Policy, thereby dealing with Exploration-Exploitation
+    Tradeoff. 
+    Q[s, a] = Q[s, a] + lr * (r + gamma * Q[next_state][next_action] - Q[s, a])
+    
+    """
     action_range = env.action_space.n
     observation_range = env.observation_space.n
     Q = np.zeros((observation_range, action_range))
@@ -94,7 +107,7 @@ def SARSA(env, lr=0.01, num_episodes=10000, eps=0.3, gamma=0.95, eps_decay=0.000
         
         while not done:
             s_, r, done, info = env.step(action)
-            next_action = eps_greedy(Q, s_, eps)
+            next_action = eps_greedy(Q, s_, eps)  #Selecting the Next Action based on Epsilon Greedy Policy. 
             
             Q[state][action] += lr * (r + gamma * Q[s_][next_action] - Q[state][action])
             state = s_
